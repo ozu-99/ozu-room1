@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Showroom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            background-image: url('e.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .book {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            width: min(70vw, 90vh);
+            background-image: url('font2-restored.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            container-type: size;
+            cursor: pointer;
+            clip-path: circle(40%);
+            z-index: 15;
+        }
+
+        .book.spinning {
+            animation: spin 30s linear infinite;
+        }
+
+        .book.spinning.paused {
+            animation-play-state: paused;
+        }
+
+        .floating-tip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 300;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 100;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        .ozu {
+            position: absolute;
+            left: 50%;
+            top: 20%;
+            transform: translateX(-50%);
+            width: 70%;
+            text-align: center;
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+            font-weight: 400;
+            font-size: 5cqh;
+            line-height: 1.2;
+            color: #c8202a;
+        }
+
+        .ozu-sub {
+            position: absolute;
+            left: 50%;
+            top: 36%;
+            transform: translateX(-50%);
+            width: 70%;
+            text-align: center;
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+            font-weight: 400;
+            font-size: 2.5cqh;
+            line-height: 1;
+            color: #c8202a;
+            white-space: nowrap;
+        }
+
+        .ozu-info {
+            position: absolute;
+            left: 50%;
+            top: calc(59%);
+            transform: translateX(-50%);
+            text-align: left;
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+            font-weight: 400;
+            font-size: 2.3cqh;
+            line-height: 1.4;
+            color: #c8202a;
+            white-space: nowrap;
+        }
+
+        .ozu-tail {
+            position: absolute;
+            left: 50%;
+            top: 80%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+            font-weight: 400;
+            font-size: 1.5cqh;
+            line-height: 1.2;
+            color: #c8202a;
+            white-space: nowrap;
+        }
+
+        .note {
+            position: fixed;
+            bottom: 8vh;
+            right: 9vw;
+            width: min(20vw, 240px);
+            aspect-ratio: 1164 / 1741;
+            background-image: url('note-window.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            border-radius: 1.5%;
+            z-index: 9;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25));
+            cursor: grab;
+            user-select: none;
+        }
+
+        .note.dragging {
+            cursor: grabbing;
+        }
+
+        .note-content {
+            position: absolute;
+            left: 3%;
+            top: 8%;
+            width: 90%;
+            height: 87%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 3% 4%;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #000;
+            user-select: text;
+            cursor: text;
+            scrollbar-width: thin;
+            scrollbar-color: #c8202a transparent;
+        }
+
+        .note-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .note-content::-webkit-scrollbar-thumb {
+            background: #c8202a;
+            border-radius: 3px;
+        }
+        .note-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .note-header {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            color: #c8202a;
+            font-weight: 600;
+            text-align: center;
+            margin: 0 8px 6px 8px;
+            padding: 4px 0 4px 4px;
+            z-index: 1;
+        }
+
+        .note-log .log-entry {
+            display: flex;
+            align-items: center;
+            padding-left: 2ch;
+            overflow: hidden;
+        }
+
+        .note-log .log-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .note-log .log-delete {
+            color: #c8202a;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+            font-size: 11px;
+            padding: 0 6px;
+            line-height: 1;
+            font-family: inherit;
+        }
+
+        .note-log .log-delete:hover {
+            color: #ff0000;
+        }
+
+        .hearts-corner {
+            position: fixed;
+            top: 2vh;
+            right: 2vw;
+            font-size: 22px;
+            line-height: 1;
+            color: #c8202a;
+            letter-spacing: 0.05em;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            z-index: 25;
+            cursor: default;
+            user-select: none;
+        }
+
+        .hearts-corner::after {
+            content: attr(data-tip);
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 300;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .hearts-corner:hover::after {
+            opacity: 1;
+        }
+
+        .clock {
+            position: fixed;
+            top: 2vh;
+            left: 2vw;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 300;
+            font-size: 14px;
+            color: #fff;
+            letter-spacing: 0.04em;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .greeting {
+            position: fixed;
+            top: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 100;
+            font-size: 16px;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .chat {
+            position: fixed;
+            top: 12%;
+            left: 24%;
+            width: min(15vw, 180px);
+            aspect-ratio: 1002 / 358;
+            background-image: url('chat-bubble.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            z-index: 8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            container-type: inline-size;
+            cursor: default;
+        }
+
+        .chat::before {
+            content: '얏호';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 300;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .chat:hover::before {
+            opacity: 1;
+        }
+
+        .chat-text {
+            color: #000;
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+            font-size: 8.5cqi;
+            white-space: nowrap;
+            padding-right: 10%;
+            padding-bottom: 2%;
+        }
+
+        .bday {
+            position: fixed;
+            top: 32%;
+            left: 5vw;
+            transform: translateY(-50%);
+            width: min(21vw, 290px);
+            aspect-ratio: 464 / 447;
+            z-index: 10;
+            cursor: grab;
+            user-select: none;
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
+        }
+
+        .bday::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('bday-frame.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            pointer-events: none;
+        }
+
+        .bday.dragging {
+            cursor: grabbing;
+        }
+
+        .bday::before {
+            content: '어린이날 (이었던 것)';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 300;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 50;
+        }
+
+        .bday:hover::before {
+            opacity: 1;
+        }
+
+        .present {
+            position: fixed;
+            bottom: 10vh;
+            left: 19vw;
+            width: min(23vw, 230px);
+            height: auto;
+            z-index: 9;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-drag: none;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2));
+        }
+
+        .present.dragging {
+            cursor: grabbing;
+        }
+
+        .present-tip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 300;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 100;
+        }
+
+        .postbox {
+            position: fixed;
+            bottom: -4vh;
+            left: 7vw;
+            width: min(10vw, 130px);
+            height: auto;
+            z-index: 8;
+            cursor: pointer;
+            -webkit-user-drag: none;
+            user-select: none;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+            transition: transform 0.15s ease;
+        }
+
+        .postbox:hover {
+            transform: translateY(-3px);
+        }
+
+        .postbox-badge {
+            position: fixed;
+            bottom: calc(-4vh + min(10vw, 130px) * 1.7);
+            left: calc(7vw + min(10vw, 130px) * 0.65);
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 11px;
+            background: #fff;
+            color: #c8202a;
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            pointer-events: none;
+        }
+
+        .postbox-badge.hidden {
+            display: none;
+        }
+
+        .letter-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .letter-overlay.show {
+            display: flex;
+        }
+
+        .letter-list {
+            background: #fff;
+            border-radius: 12px;
+            min-width: 280px;
+            max-width: 380px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 18px 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+        }
+
+        .letter-list h3 {
+            margin: 0 0 12px;
+            color: #c8202a;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .letter-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .letter-list li {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .letter-list li:hover { background: #f6e9ea; }
+
+        .letter-list li.unread { color: #1e6dff; }
+        .letter-list li.read { color: #000; }
+
+        .letter-list li.unread .from { color: #1e6dff; font-weight: 700; }
+        .letter-list li.read .from { color: #000; font-weight: 600; }
+
+        .letter-list li .from {
+            white-space: nowrap;
+        }
+
+        .letter-list li.unread .preview { color: #1e6dff; }
+        .letter-list li.read .preview { color: #444; }
+
+        .letter-list li .preview {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .letter-list li .delete-btn {
+            background: transparent;
+            border: 0;
+            color: #c8202a;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 4px;
+            line-height: 1;
+            font-family: inherit;
+        }
+
+        .letter-list li .delete-btn:hover {
+            color: #ff0000;
+        }
+
+        .letter-list .empty {
+            text-align: center;
+            color: #999;
+            padding: 14px 0;
+            font-size: 13px;
+        }
+
+        .letter-list .close {
+            display: block;
+            margin: 14px auto 0;
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #666;
+            border-radius: 6px;
+            padding: 6px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .letter-paper {
+            position: relative;
+            width: min(80vw, 600px);
+            aspect-ratio: 1087 / 943;
+            background-image: url('letter.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            cursor: default;
+        }
+
+        .letter-paper .letter-from {
+            position: absolute;
+            top: 14%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+            font-weight: 600;
+            font-size: clamp(18px, 2.4vw, 28px);
+            color: #c8202a;
+        }
+
+        .letter-paper .letter-text {
+            position: absolute;
+            top: 28%;
+            left: 14%;
+            right: 14%;
+            bottom: 16%;
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+            font-size: clamp(13px, 1.5vw, 20px);
+            line-height: 1.6;
+            color: #2a2a2a;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            overflow-y: auto;
+        }
+
+        .letter-paper .letter-back {
+            position: absolute;
+            top: -16px;
+            right: -16px;
+            background: #fff;
+            border: 0;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            font-size: 16px;
+            color: #c8202a;
+        }
+
+        .msg {
+            position: fixed;
+            top: calc(32% + min(21vw, 290px) * 0.6);
+            left: 4vw;
+            width: min(22vw, 300px);
+            aspect-ratio: 995 / 305;
+            background-image: url('msg-box.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            border-radius: 7px;
+            z-index: 9;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2));
+        }
+
+        .msg-text {
+            position: absolute;
+            left: 4%;
+            top: 32%;
+            width: 92%;
+            height: 60%;
+            background: transparent;
+            border: 0;
+            outline: none;
+            resize: none;
+            padding: 4% 4%;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.3;
+            color: #222;
+        }
+
+        .msg-text::placeholder {
+            color: #b0b0b0;
+        }
+
+        .msg-send {
+            position: absolute;
+            right: 4%;
+            bottom: 6%;
+            background: #4cd964;
+            color: #fff;
+            border: 0;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .msg-send:hover {
+            background: #34b850;
+        }
+
+        .msg-send:active {
+            transform: translateY(1px);
+        }
+
+        .bday-photo {
+            position: absolute;
+            left: 10%;
+            top: 30%;
+            width: 80%;
+            height: 64%;
+            background-image: url('me.JPG');
+            background-size: cover;
+            background-position: center;
+            pointer-events: none;
+        }
+
+        .heart {
+            position: fixed;
+            top: 33.3%;
+            right:2vw;
+            transform: translateY(-50%);
+            width: 20vw;
+            max-width: 200px;
+            height: auto;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-drag: none;
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
+            z-index: 30;
+        }
+
+        .heart.dragging {
+            cursor: grabbing;
+            transition: none;
+        }
+
+        #bgm {
+            display: none;
+        }
+
+        .ipod {
+            position: fixed;
+            top: 120px;
+            right: 150px;
+            width: min(56vw, 294px);
+            aspect-ratio: 731 / 346;
+            background-image: url('ipod-crop.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            z-index: 20;
+            filter: drop-shadow(0 6px 16px rgba(0,0,0,0.3));
+            cursor: grab;
+            user-select: none;
+        }
+
+        .ipod.dragging {
+            cursor: grabbing;
+        }
+
+        .ipod::before {
+            content: '클릭시 노래가 멈춰요';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 300;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .ipod:hover::before {
+            opacity: 1;
+        }
+
+        .ipod-cover {
+            position: absolute;
+            left: 5%;
+            top: 11%;
+            width: 49%;
+            height: 78%;
+            background-image: url('cover.png');
+            background-size: cover;
+            background-position: center;
+            pointer-events: none;
+        }
+
+        .ipod-play {
+            position: absolute;
+            left: 70%;
+            top: 70%;
+            width: 12%;
+            height: 22%;
+            background: transparent;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .intro-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        body:not(.greeting-shown) .greeting {
+            display: none !important;
+        }
+
+        body:not(.ready) .ipod,
+        body:not(.ready) .note,
+        body:not(.ready) .heart,
+        body:not(.ready) .postbox,
+        body:not(.ready) .postbox-badge,
+        body:not(.ready) .bday,
+        body:not(.ready) .chat,
+        body:not(.ready) .msg,
+        body:not(.ready) .present,
+        body:not(.ready) .present-tip,
+        body:not(.ready) .clock,
+        body:not(.ready) .hearts-corner {
+            display: none !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        body.greeting-shown .greeting {
+            animation: fadeIn 0.6s ease-out both;
+        }
+
+        body.ready .ipod,
+        body.ready .note,
+        body.ready .heart,
+        body.ready .postbox,
+        body.ready .bday,
+        body.ready .chat,
+        body.ready .msg,
+        body.ready .present,
+        body.ready .clock,
+        body.ready .hearts-corner {
+            animation: fadeIn 0.5s ease-out both;
+        }
+
+        .intro-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .intro-button {
+            position: relative;
+            cursor: pointer;
+            background: transparent;
+            border: 0;
+            padding: 0;
+            width: min(28vw, 252px);
+            height: auto;
+            container-type: inline-size;
+        }
+
+        .intro-button img {
+            display: block;
+            width: 100%;
+            height: auto;
+            -webkit-user-drag: none;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .intro-name {
+            position: absolute;
+            left: 7%;
+            top: 38%;
+            width: 86%;
+            height: 50%;
+            background: transparent;
+            border: 0;
+            outline: none;
+            text-align: center;
+            font-family: '조선굴림체', 'ChosunGu', 'Gulim', '굴림', sans-serif;
+            font-size: 14cqi;
+            font-weight: 400;
+            color: #000;
+            cursor: text;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+        <defs>
+            <filter id="ink-fx">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4"/>
+                <feDisplacementMap in="SourceGraphic" scale="0.8"/>
+            </filter>
+        </defs>
+    </svg>
+    <div class="book">
+        <span class="ozu">안녕하세요<br>저는 OZU에요</span>
+        <span class="ozu-sub">nice to meeet u</span>
+        <div class="ozu-info">
+            1. 이름 : 오주연<br>
+            2. 나이 : 1999년생 (28세)<br>
+            3. MBTI : istp<br>
+            4. 좋아하는 숫자 : 5<br>
+            5. TMI : <span id="random-tmi"></span>
+        </div>
+        <span class="ozu-tail">낯을 좀 가리지만 금방 친해져요<br>(아마두)</span>
+    </div>
+    <div class="clock" id="clock"></div>
+    <div class="hearts-corner" data-tip="JESUS LOVES U (always)">♡♥</div>
+    <div class="floating-tip" id="cd-tip">클릭시 CD가 멈춰요</div>
+    <div class="greeting">방문자님 안녕하세요</div>
+    <div class="note"><div class="note-content"><div class="note-header">&lt; 방문자 기록 &gt;</div><div class="note-log" id="note-log"></div></div></div>
+    <div class="chat"><span class="chat-text">오늘 방문자 : <span id="visitor-count">…</span></span></div>
+    <div class="bday"><div class="bday-photo"></div></div>
+    <div class="msg"><textarea class="msg-text" id="msg-text" placeholder="쥔장에게 편지 쓰기 (쥔장만 볼 수 있음)"></textarea><button class="msg-send" id="msg-send" type="button">보내기</button></div>
+    <img class="postbox" id="postbox" src="postbox-ext.png" alt="" draggable="false">
+    <div class="postbox-badge hidden" id="postbox-badge">0</div>
+    <div class="letter-overlay" id="letter-overlay"></div>
+    <img class="present" src="present.png" alt="" draggable="false">
+    <div class="present-tip" id="present-tip">this is for U ! !</div>
+    <img class="heart" src="y-cutout.png" alt="Love Yourself" draggable="false">
+    <div class="intro-overlay" id="intro-overlay">
+        <div class="intro-button" id="intro-button" role="button" aria-label="시작">
+            <img src="hi-button.png" alt="HELLO my name is" draggable="false">
+            <input type="text" class="intro-name" placeholder="">
+        </div>
+    </div>
+    <audio id="bgm" src="song.mp3" loop preload="auto"></audio>
+    <div class="ipod">
+        <div class="ipod-cover"></div>
+        <button class="ipod-play" id="ipod-play" aria-label="재생/일시정지"></button>
+    </div>
+    <script>
+        (function () {
+            const el = document.getElementById('clock');
+            if (!el) return;
+            const pad = n => String(n).padStart(2, '0');
+            const tick = () => {
+                const d = new Date();
+                el.textContent = `${d.getFullYear()} / ${pad(d.getMonth() + 1)} / ${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            };
+            tick();
+            setInterval(tick, 1000 * 30);
+        })();
+
+        (function () {
+            const book = document.querySelector('.book');
+            const tip = document.getElementById('cd-tip');
+            if (!book || !tip) return;
+            book.addEventListener('mouseenter', () => { tip.style.opacity = '1'; });
+            book.addEventListener('mousemove', (e) => {
+                tip.style.left = (e.clientX + 14) + 'px';
+                tip.style.top = (e.clientY + 14) + 'px';
+            });
+            book.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
+        })();
+
+        (function () {
+            const el = document.querySelector('.present');
+            const tip = document.getElementById('present-tip');
+            if (!el) return;
+
+            if (tip) {
+                el.addEventListener('mouseenter', () => { tip.style.opacity = '1'; });
+                el.addEventListener('mousemove', (e) => {
+                    tip.style.left = (e.clientX + 14) + 'px';
+                    tip.style.top = (e.clientY + 14) + 'px';
+                    const r = el.getBoundingClientRect();
+                    const lx = (e.clientX - r.left) / r.width;
+                    const ly = (e.clientY - r.top) / r.height;
+                    if (lx < 0.28 && ly < 0.7) {
+                        tip.textContent = 'CLIKE ME !';
+                        tip.style.color = '#ffd400';
+                    } else {
+                        tip.textContent = 'this is for U ! !';
+                        tip.style.color = '#fff';
+                    }
+                });
+                el.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
+            }
+
+            // 꽃 영역에서 클릭 시 재생할 짧은 종소리
+            let audioCtx = null;
+            const playDing = () => {
+                try {
+                    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                    const now = audioCtx.currentTime;
+                    [880, 1320].forEach((f, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = f;
+                        gain.gain.setValueAtTime(0, now + i * 0.08);
+                        gain.gain.linearRampToValueAtTime(0.25, now + i * 0.08 + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.08 + 0.5);
+                        osc.connect(gain).connect(audioCtx.destination);
+                        osc.start(now + i * 0.08);
+                        osc.stop(now + i * 0.08 + 0.55);
+                    });
+                } catch (_) {}
+            };
+
+            let dragging = false;
+            let didMove = false;
+            let offsetX = 0, offsetY = 0;
+            let downX = 0, downY = 0;
+            let downLocalX = 0, downLocalY = 0;
+            let elW = 0, elH = 0;
+
+            el.addEventListener('pointerdown', (e) => {
+                dragging = true;
+                didMove = false;
+                downX = e.clientX;
+                downY = e.clientY;
+                el.classList.add('dragging');
+                const rect = el.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                downLocalX = (e.clientX - rect.left) / rect.width;
+                downLocalY = (e.clientY - rect.top) / rect.height;
+                elW = rect.width;
+                elH = rect.height;
+                el.style.left = rect.left + 'px';
+                el.style.top = rect.top + 'px';
+                el.style.right = 'auto';
+                el.style.bottom = 'auto';
+                el.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            });
+            el.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                if (Math.hypot(e.clientX - downX, e.clientY - downY) > 4) didMove = true;
+                el.style.left = (e.clientX - offsetX) + 'px';
+                el.style.top = (e.clientY - offsetY) + 'px';
+            });
+            const stopDrag = (e) => {
+                if (!dragging) return;
+                dragging = false;
+                el.classList.remove('dragging');
+                try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+                // 클릭(드래그 안 한 경우) + 꽃 영역 → 소리 재생
+                if (!didMove && downLocalX < 0.28 && downLocalY < 0.7) {
+                    playDing();
+                }
+            };
+            el.addEventListener('pointerup', stopDrag);
+            el.addEventListener('pointercancel', stopDrag);
+        })();
+
+        // 편지 / 우체통 시스템
+        const LETTERS_KEY = 'letters';
+        function loadLetters() {
+            try { return JSON.parse(localStorage.getItem(LETTERS_KEY)) || []; }
+            catch (_) { return []; }
+        }
+        function saveLetters(arr) {
+            try { localStorage.setItem(LETTERS_KEY, JSON.stringify(arr)); } catch (_) {}
+            updateBadge();
+        }
+        function visibleLetters() {
+            // 모든 사용자가 전체 목록을 볼 수 있음 (열람은 권한별로 다름)
+            return loadLetters().map((L, i) => ({L, i}));
+        }
+
+        function updateBadge() {
+            const badge = document.getElementById('postbox-badge');
+            if (!badge) return;
+            // 주인 기준 안 읽은 편지 수를 모두에게 표시
+            const unread = loadLetters().filter(L => !L.read).length;
+            if (unread > 0) {
+                badge.textContent = String(unread);
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+        function showLetter(idx) {
+            const overlay = document.getElementById('letter-overlay');
+            const letters = loadLetters();
+            const L = letters[idx];
+            if (!L) return;
+            // 권한 검사: 주인이거나 본인이 보낸 편지만 열람 가능
+            const isOwner = localStorage.getItem('is-owner') === '1';
+            const me = localStorage.getItem('current-visitor') || '';
+            if (!isOwner && L.name !== me) return;
+            if (!L.read) {
+                L.read = true;
+                saveLetters(letters);
+            }
+            overlay.innerHTML = `
+                <div class="letter-paper">
+                    <button class="letter-back" type="button" id="letter-back">‹</button>
+                    <div class="letter-from">from. ${escapeHtml(L.name || '익명')}</div>
+                    <div class="letter-text">${escapeHtml(L.text || '')}</div>
+                </div>
+            `;
+            overlay.classList.add('show');
+            document.getElementById('letter-back').addEventListener('click', (e) => {
+                e.stopPropagation();
+                openLetterList();
+            });
+        }
+        function openLetterList() {
+            const overlay = document.getElementById('letter-overlay');
+            const visible = visibleLetters();
+            const isOwner = localStorage.getItem('is-owner') === '1';
+            const me = localStorage.getItem('current-visitor') || '';
+            if (visible.length === 0) {
+                overlay.innerHTML = `
+                    <div class="letter-list">
+                        <h3>📮 우체통</h3>
+                        <div class="empty">아직 편지가 없어요.</div>
+                        <button class="close" id="letter-close" type="button">닫기</button>
+                    </div>
+                `;
+            } else {
+                const items = visible.map(({L, i}) => {
+                    const cls = L.read ? 'read' : 'unread';
+                    const canDelete = isOwner || (me && L.name === me);
+                    const delBtn = canDelete ? `<button class="delete-btn" data-del="${i}" type="button" title="삭제">✕</button>` : '';
+                    return `<li class="${cls}" data-idx="${i}"><span class="from">${escapeHtml(L.name || '익명')}</span>${delBtn}</li>`;
+                }).join('');
+                const unread = visible.filter(({L}) => !L.read).length;
+                overlay.innerHTML = `
+                    <div class="letter-list">
+                        <h3>📮 받은 편지 (${visible.length}) ${unread > 0 ? `· 안읽음 ${unread}` : ''}</h3>
+                        <ul>${items}</ul>
+                        <button class="close" id="letter-close" type="button">닫기</button>
+                    </div>
+                `;
+                overlay.querySelectorAll('li').forEach(li => {
+                    li.addEventListener('click', (e) => {
+                        if (e.target.closest('.delete-btn')) return;
+                        e.stopPropagation();
+                        showLetter(parseInt(li.dataset.idx, 10));
+                    });
+                });
+                overlay.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const idx = parseInt(btn.dataset.del, 10);
+                        const cur = loadLetters();
+                        cur.splice(idx, 1);
+                        saveLetters(cur);
+                        openLetterList();
+                    });
+                });
+            }
+            overlay.classList.add('show');
+            document.getElementById('letter-close').addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeLetterOverlay();
+            });
+        }
+        function closeLetterOverlay() {
+            const overlay = document.getElementById('letter-overlay');
+            overlay.classList.remove('show');
+            overlay.innerHTML = '';
+        }
+
+        (function () {
+            const overlay = document.getElementById('letter-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) closeLetterOverlay();
+                });
+            }
+            const postbox = document.getElementById('postbox');
+            if (postbox) {
+                postbox.addEventListener('click', openLetterList);
+            }
+            updateBadge();
+        })();
+
+        (function () {
+            const t = document.getElementById('msg-text');
+            const btn = document.getElementById('msg-send');
+            if (!t) return;
+            // 페이지 로드 시 항상 비워서 placeholder가 보이도록
+            t.value = '';
+            try { localStorage.removeItem('msg-text'); } catch (_) {}
+            const send = () => {
+                const text = t.value.trim();
+                if (!text) { t.focus(); return; }
+                const name = localStorage.getItem('current-visitor') || '익명';
+                const letters = loadLetters();
+                letters.push({ name, text, time: Date.now() });
+                saveLetters(letters);
+                t.value = '';
+            };
+            if (btn) btn.addEventListener('click', send);
+        })();
+
+        const NOTE_LOG_KEY = 'visitor-log';
+        function loadVisitorLog() {
+            try { return JSON.parse(localStorage.getItem(NOTE_LOG_KEY)) || []; }
+            catch (_) { return []; }
+        }
+        function renderVisitorLog() {
+            const log = document.getElementById('note-log');
+            if (!log) return;
+            const arr = loadVisitorLog();
+            log.innerHTML = '';
+            arr.forEach((line, idx) => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+
+                const nameEl = document.createElement('span');
+                nameEl.className = 'log-name';
+                nameEl.textContent = '- ' + line;
+                entry.appendChild(nameEl);
+
+                const del = document.createElement('button');
+                del.className = 'log-delete';
+                del.type = 'button';
+                del.textContent = '✕';
+                del.title = '삭제';
+                del.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const cur = loadVisitorLog();
+                    cur.splice(idx, 1);
+                    try { localStorage.setItem(NOTE_LOG_KEY, JSON.stringify(cur)); } catch (_) {}
+                    renderVisitorLog();
+                });
+                entry.appendChild(del);
+
+                log.appendChild(entry);
+            });
+            const content = log.parentElement;
+            if (content) content.scrollTop = content.scrollHeight;
+        }
+        function appendVisitorLog(name) {
+            const arr = loadVisitorLog();
+            arr.push(name);
+            try { localStorage.setItem(NOTE_LOG_KEY, JSON.stringify(arr)); } catch (_) {}
+            renderVisitorLog();
+        }
+        renderVisitorLog();
+
+        (function () {
+            const el = document.querySelector('.note');
+            if (!el) return;
+            let dragging = false;
+            let offsetX = 0, offsetY = 0;
+
+            el.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('.note-content')) return;
+                dragging = true;
+                el.classList.add('dragging');
+                const rect = el.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                el.style.left = rect.left + 'px';
+                el.style.top = rect.top + 'px';
+                el.style.right = 'auto';
+                el.style.bottom = 'auto';
+                el.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            });
+            el.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                el.style.left = (e.clientX - offsetX) + 'px';
+                el.style.top = (e.clientY - offsetY) + 'px';
+            });
+            const stopDrag = (e) => {
+                if (!dragging) return;
+                dragging = false;
+                el.classList.remove('dragging');
+                try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+            };
+            el.addEventListener('pointerup', stopDrag);
+            el.addEventListener('pointercancel', stopDrag);
+        })();
+
+        (function () {
+            const overlay = document.getElementById('intro-overlay');
+            const introBtn = document.getElementById('intro-button');
+            const isOwner = localStorage.getItem('is-owner') === '1';
+
+            if (introBtn && overlay) {
+                const nameInput = introBtn.querySelector('.intro-name');
+                let dismissed = false;
+                const dismiss = () => {
+                    if (dismissed) return;
+                    const value = nameInput ? nameInput.value.trim() : '';
+                    if (!isOwner && !value) {
+                        if (nameInput) nameInput.focus();
+                        return;
+                    }
+                    dismissed = true;
+                    if (value) {
+                        try { localStorage.setItem('current-visitor', value); } catch (_) {}
+                        appendVisitorLog(value);
+                        const greeting = document.querySelector('.greeting');
+                        if (greeting) {
+                            greeting.innerHTML = '';
+                            const nameSpan = document.createElement('span');
+                            nameSpan.style.fontWeight = '700';
+                            nameSpan.style.fontSize = '1.5em';
+                            nameSpan.textContent = value;
+                            greeting.appendChild(nameSpan);
+                            greeting.appendChild(document.createTextNode('님 안녕하세요'));
+                        }
+                    }
+                    overlay.classList.add('hidden');
+                    setTimeout(() => overlay.remove(), 350);
+                    document.body.classList.add('greeting-shown');
+                    const book = document.querySelector('.book');
+                    setTimeout(() => {
+                        document.body.classList.add('ready');
+                        if (book) book.classList.add('spinning');
+                    }, 900);
+                    const bgm = document.getElementById('bgm');
+                    if (bgm) {
+                        bgm.muted = false;
+                        bgm.play().catch(() => {});
+                    }
+                };
+                if (nameInput) {
+                    setTimeout(() => nameInput.focus(), 50);
+                    nameInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            dismiss();
+                        }
+                    });
+                }
+                introBtn.addEventListener('click', (e) => {
+                    if (e.target.closest('.intro-name')) return;
+                    if (nameInput) nameInput.focus();
+                });
+            }
+        })();
+
+        (function () {
+            // 일별 방문자 카운트 (매일 0부터, 본인 제외)
+            const el = document.getElementById('visitor-count');
+            if (!el) return;
+
+            const params = new URLSearchParams(location.search);
+            if (params.get('owner') === '1') {
+                localStorage.setItem('is-owner', '1');
+            }
+            const isOwner = localStorage.getItem('is-owner') === '1';
+
+            const today = new Date().toISOString().slice(0, 10);
+            // 오늘 이미 카운트된 브라우저는 재방문 시 카운트 안 함 (다음날엔 다시 카운트)
+            const visitedKey = 'visited-' + today;
+            const alreadyCounted = localStorage.getItem(visitedKey) === '1';
+            const skipIncrement = isOwner || alreadyCounted;
+
+            const ns = 'ozu-page';
+            const key = 'visit-' + today;
+            const apiUrl = skipIncrement
+                ? `https://abacus.jasoncameron.dev/get/${ns}/${key}`
+                : `https://abacus.jasoncameron.dev/hit/${ns}/${key}`;
+            fetch(apiUrl)
+                .then(r => r.json())
+                .then(data => {
+                    if (data && typeof data.value === 'number') {
+                        el.textContent = data.value;
+                        if (!skipIncrement) localStorage.setItem(visitedKey, '1');
+                    } else {
+                        throw new Error('bad payload');
+                    }
+                })
+                .catch(() => {
+                    // 폴백: localStorage 일별 카운트 (브라우저별)
+                    const lkey = 'local-visit-' + today;
+                    let n = parseInt(localStorage.getItem(lkey) || '0', 10);
+                    if (!skipIncrement) {
+                        n += 1;
+                        localStorage.setItem(lkey, String(n));
+                        localStorage.setItem(visitedKey, '1');
+                    }
+                    el.textContent = n;
+                });
+        })();
+
+        (function () {
+            const bgm = document.getElementById('bgm');
+            const playBtn = document.getElementById('ipod-play');
+            if (playBtn && bgm) {
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (bgm.paused) {
+                        bgm.muted = false;
+                        bgm.play().catch(() => {});
+                    } else {
+                        bgm.pause();
+                    }
+                });
+            }
+
+            const book = document.querySelector('.book');
+            book.addEventListener('click', (e) => {
+                const rect = book.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                const r = rect.width * 0.40;
+                const dx = e.clientX - cx;
+                const dy = e.clientY - cy;
+                if (dx * dx + dy * dy <= r * r) {
+                    book.classList.toggle('paused');
+                }
+            });
+
+            const tmis = [
+                '최애 음식 소곱창',
+                '옷 조아 쇼핑 조아',
+                '예스 민초파',
+                '방해금지모드 러버'
+            ];
+            const tmiEl = document.getElementById('random-tmi');
+            if (tmiEl) tmiEl.textContent = tmis[Math.floor(Math.random() * tmis.length)];
+        })();
+
+        (function () {
+            const el = document.querySelector('.bday');
+            if (!el) return;
+            let dragging = false;
+            let offsetX = 0, offsetY = 0;
+
+            el.addEventListener('pointerdown', (e) => {
+                dragging = true;
+                el.classList.add('dragging');
+                const rect = el.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                el.style.transform = 'none';
+                el.style.left = rect.left + 'px';
+                el.style.top = rect.top + 'px';
+                el.style.right = 'auto';
+                el.style.bottom = 'auto';
+                el.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            });
+
+            el.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                el.style.left = (e.clientX - offsetX) + 'px';
+                el.style.top = (e.clientY - offsetY) + 'px';
+            });
+
+            const stopDrag = (e) => {
+                if (!dragging) return;
+                dragging = false;
+                el.classList.remove('dragging');
+                try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+            };
+            el.addEventListener('pointerup', stopDrag);
+            el.addEventListener('pointercancel', stopDrag);
+        })();
+
+        (function () {
+            const el = document.querySelector('.heart');
+            let dragging = false;
+            let offsetX = 0, offsetY = 0;
+
+            el.addEventListener('pointerdown', (e) => {
+                dragging = true;
+                el.classList.add('dragging');
+                const rect = el.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                el.style.transform = 'none';
+                el.style.left = rect.left + 'px';
+                el.style.top = rect.top + 'px';
+                el.style.right = 'auto';
+                el.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            });
+
+            el.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                el.style.left = (e.clientX - offsetX) + 'px';
+                el.style.top = (e.clientY - offsetY) + 'px';
+            });
+
+            const stopDrag = (e) => {
+                if (!dragging) return;
+                dragging = false;
+                el.classList.remove('dragging');
+                try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+            };
+            el.addEventListener('pointerup', stopDrag);
+            el.addEventListener('pointercancel', stopDrag);
+        })();
+
+        (function () {
+            const el = document.querySelector('.ipod');
+            if (!el) return;
+            let dragging = false;
+            let didMove = false;
+            let offsetX = 0, offsetY = 0;
+            let downX = 0, downY = 0;
+
+            el.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('.ipod-play')) return;
+                dragging = true;
+                didMove = false;
+                downX = e.clientX;
+                downY = e.clientY;
+                el.classList.add('dragging');
+                const rect = el.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                el.style.left = rect.left + 'px';
+                el.style.top = rect.top + 'px';
+                el.style.right = 'auto';
+                el.style.bottom = 'auto';
+                el.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            });
+
+            el.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                if (Math.hypot(e.clientX - downX, e.clientY - downY) > 4) didMove = true;
+                el.style.left = (e.clientX - offsetX) + 'px';
+                el.style.top = (e.clientY - offsetY) + 'px';
+            });
+
+            const stopDrag = (e) => {
+                if (!dragging) return;
+                dragging = false;
+                el.classList.remove('dragging');
+                try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+                if (!didMove) {
+                    const bgm = document.getElementById('bgm');
+                    if (bgm) {
+                        if (bgm.paused) {
+                            bgm.muted = false;
+                            bgm.play().catch(() => {});
+                        } else {
+                            bgm.pause();
+                        }
+                    }
+                }
+            };
+            el.addEventListener('pointerup', stopDrag);
+            el.addEventListener('pointercancel', stopDrag);
+        })();
+    </script>
+</body>
+</html>
